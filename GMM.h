@@ -5,8 +5,8 @@ class GMM
 public:
 	static const int componentsCount = 5; //5个高斯模型
 	static const int channelsCount = 3; //处理3通道图片
-	static const int dataCount = componentsCount * channelsCount;//总参数个数
-	const int modelSize = 1 + channelsCount + channelsCount * channelsCount;//对象个数
+	static const int modelSize = 1 + channelsCount + channelsCount * channelsCount;//对象个数
+	static const int dataCount = componentsCount * modelSize;//总参数个数
 
 	GMM(Mat& _model); //使用外部数据构造
 	GMM();//默认构造，数据全置零
@@ -27,7 +27,7 @@ public:
 
 private:
 	int samplesCount;//总像素点数
-	double data[componentsCount * (1 + channelsCount + channelsCount * channelsCount)];//储存所有数据
+	double data[dataCount];//储存所有数据
 	//指针指向位置
 	double *coefs;//每个高斯模型的贡献
 	double *mean;//每个高斯模型的期望
