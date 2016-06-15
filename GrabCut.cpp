@@ -16,54 +16,6 @@ void setRectInMask(const Mat& img,Mat& mask, Rect& rect)
 	(mask(rect)).setTo(Scalar(GC_PR_FGD));    //GC_PR_FGD == 3 
 }
 
-void initGMM(const Mat& img, GMM& bgdGMM, GMM& fgdGMM, const Mat& mask)
-{
-	/*----------------Kmeans 聚类像素-----------------*/
-	const int kmeansItCount = 10; //kmeans最大迭代次数
-	const int kmeasType = KMEANS_RANDOM_CENTERS; //kmeans初始中心选取方法
-	const float kmeansEpsilon = 0.0; //kmeans终止迭代的误差
-
-	Mat bgdLabels, fgdLabels;
-	vector<Vec3f> bgdSamples, fgdSamples;
-
-	//根据框选分配到两个GMM
-	for (int i = 0; i < img.rows; i++)
-		for (int j = 0; j < img.cols; j++)
-		{
-			if (mask.at<uchar>(i, j) == GC_BGD || mask.at<uchar>(i, j) == GC_PR_BGD)
-				bgdSamples.push_back(img.at<Vec3b>(i, j));
-			else
-				fgdSamples.push_back(img.at<Vec3b>(i, j));
-		}
-
-	//进行Kmeans聚类分析
-	CV_Assert(!bgdSamples.empty() && !fgdSamples.empty());
-	Mat _bgdSamples(bgdSamples.size(), GMM::channelsCount, CV_32FC1, &bgdSamples[0][0]);
-	Mat _fgdSamples(fgdSamples.size(), GMM::channelsCount, CV_32FC1, &fgdSamples[0][0]);
-	kmeans(_bgdSamples, GMM::componentsCount, bgdLabels, TermCriteria(CV_TERMCRIT_ITER, kmeansItCount, kmeansEpsilon), 0, kmeasType);
-	kmeans(_fgdSamples, GMM::componentsCount, fgdLabels, TermCriteria(CV_TERMCRIT_ITER, kmeansItCount, kmeansEpsilon), 0, kmeasType);
-
-	/*-------------利用聚类结果更新GMM参数-------------*/
-	//初始化
-	bgdGMM.init();
-	fgdGMM.init();
-	
-	//根据聚类标签为每个高斯模型分配采样点
-	for (int i = 0; i < bgdSamples.size(); i++)
-	{
-		bgdGMM.add(bgdLabels.at<int>(i, 0), bgdSamples[i]);
-	}
-	for (int i = 0; i < fgdSamples.size(); i++)
-	{
-		fgdGMM.add(fgdLabels.at<int>(i, 0), fgdSamples[i]);
-	}
-
-	//计算参数
-	bgdGMM.update();
-	fgdGMM.update();
-
-}
-
 void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Rect rect, cv::InputOutputArray _bgdModel,cv::InputOutputArray _fgdModel, int iterCount, int mode )
 {
     std::cout<<"Execute GrabCut Function: Please finish the code here!"<<std::endl;
@@ -84,7 +36,7 @@ void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Re
 	}
 
 	/*------------根据框选计算GMM-------------*/
-	initGMM(img, bgdGMM, fgdGMM, mask);
+	GMM::initGMM(img, mask, bgdGMM, fgdGMM, bgdModel, fgdModel);
 
 	if ((mode != GC_CUT) || (iterCount == 0))
 		return;
