@@ -199,3 +199,10 @@ int GCApplication::nextIter()
 
 	return iterCount;
 }
+
+//border matting
+void GCApplication::borderMatting()
+{
+	bm.borderMatting(*image, mask, borderMask);
+
+}

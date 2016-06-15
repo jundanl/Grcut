@@ -33,7 +33,7 @@ static void on_mouse( int event, int x, int y, int flags, void* param )
 int main()
 {
 
-	string filename = "1.png";
+	string filename = "test.jpg";
 	Mat image = imread( filename, 1 );
 	if( image.empty() )
 	{
@@ -53,6 +53,7 @@ int main()
 	for(;;)
 	{
 		int c = cvWaitKey(0);
+		int iterCount;
 		switch( (char) c )
 		{
 		case '\x1b':
@@ -63,12 +64,23 @@ int main()
 			gcapp.reset();
 			gcapp.showImage();
 			break;
+		case 'b':
+			cout << (char)c << endl;
+			iterCount = gcapp.getIterCount();
+			if (iterCount == 0)
+				cout << "Please implement grabcut first." << endl;
+			else
+			{
+				gcapp.borderMatting();
+				gcapp.showImage();
+			}
+			break;
 		case 'n':
 			cout << (char)c << endl;
-			int iterCount = gcapp.getIterCount();
+			iterCount = gcapp.getIterCount();
 			cout << "<" << iterCount << "... ";
 			int newIterCount = gcapp.nextIter();
-			if( newIterCount > iterCount )
+			if (newIterCount > iterCount)
 			{
 				gcapp.showImage();
 				cout << iterCount << ">" << endl;
