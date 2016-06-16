@@ -7,4 +7,10 @@
 !main.cpp
 !GMM.h
 !GMM.cpp
-
+!Bgraph.h
+!Bgraph.cpp
+!graph.h
+!graph.cpp
+!instances.inc
+!maxflow.cpp
+!block.h
