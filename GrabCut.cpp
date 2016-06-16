@@ -38,11 +38,12 @@ void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Re
 	Mat& mask = _mask.getMatRef();
 	Mat& bgdModel = _bgdModel.getMatRef();
 	Mat& fgdModel = _fgdModel.getMatRef();
-	
 	/*iterCount = 2;
 	grabCut(img,mask,rect,bgdModel,fgdModel,iterCount,mode);
 	return;
 */
+	static GMM bgdGMM = GMM(bgdModel);
+	static GMM fgdGMM = GMM(fgdModel);
 	if (mode != GC_CUT)
 	{
 		if (mode == GC_WITH_RECT)
@@ -50,16 +51,20 @@ void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Re
 			cout << "GC_WITH_RECT" << endl;
 			setRectInMask(img, mask, rect);
 		}
-		bgdGMM = GMM(bgdModel);
-		fgdGMM = GMM(fgdModel);
+		//bgdGMM = GMM();
+		//fgdGMM = GMM();
 		GMM::initGMM(img, mask, bgdGMM, fgdGMM, bgdModel, fgdModel);
 	}
 	if ((mode != GC_CUT) || (iterCount == 0))
 		return;
+	cout << "befot initGMM" << endl;
 	GMM::initGMM(img, mask, bgdGMM, fgdGMM, bgdModel, fgdModel);
 	//GMM().initGMM(img,mask,bgdGMM,fgdGMM,bgdModel,fgdModel);
+	cout << "after initGMM" << endl;
+	//return;
 	buildgraph bg;
 	bg.mincut(mask,img,bgdModel,fgdModel);
+	cout << "after mincut" << endl;
 //一.参数解释：
 	//输入：
 	 //cv::InputArray _img,     :输入的color图像(类型-cv:Mat)

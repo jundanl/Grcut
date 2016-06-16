@@ -30,9 +30,9 @@ void buildgraph::mincut(Mat &mask, const Mat &img, const Mat &bg, const Mat &fg)
 				if (mask.at<uchar>(i,j) == GC_PR_BGD || mask.at<uchar>(i,j) == GC_PR_FGD)
 				{
 					if (g->what_segment(i*cols + j) == GraphType::SOURCE)
-						mask.at<uchar>(i, j) = GC_FGD;
+						mask.at<uchar>(i, j) = GC_PR_FGD;
 					else
-						mask.at<uchar>(i, j) = GC_BGD;
+						mask.at<uchar>(i, j) = GC_PR_BGD;
 				}
 			}
 		//cout << "flag3" << endl;

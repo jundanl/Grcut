@@ -68,7 +68,7 @@ private:
 	const int sigmaLevels = 10;
 	const int deltaLevels = 10;
 	const double sigma = 0.5;
-	const double delta = 0.1;
+	const double delta = 0.3;
 	const int lamda1 = 50;
 	const int lamda2 = 1000;
 	int sections = 0;
@@ -77,8 +77,8 @@ private:
 	int tot;
 	Contour contour;
 	Strip strip;
-	double ef[2000][30][10];
-	dands rec[2000][30][10];
+	double ef[5000][30][10];
+	dands rec[5000][30][10];
 	vector<dands> vecds;
 };
 

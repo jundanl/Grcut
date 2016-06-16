@@ -123,7 +123,6 @@ void BorderMatting::StripInit(const Mat& mask, Contour& contour, Strip& strip)
 			color.at<int>(newx, newy) = nip.area+1;
 		}
 	}
-	imshow("strip",color);
 }
 
 
@@ -155,8 +154,8 @@ double BorderMatting:: Dfunc(int index, point p, double uf, double ub, double cf
 	map<int, bool> color;
 	double sum = 0;
 	inf_point ip = strip[p.x*COE + p.y];
-	double alpha = Gaussian(ip.dis, delta, sigma);
-	double D = Gaussian(gray.at<uchar>(ip.p.x, ip.p.y), ufunc(alpha, uf, ub), cfunc(alpha, cf, cb));
+	double alpha = Gaussian(ip.dis / 6.0, delta, sigma);
+	double D = Gaussian(gray.at<float>(ip.p.x, ip.p.y), ufunc(alpha, uf, ub), cfunc(alpha, cf, cb));
 	D = -log(D) / log(2.0);
 	sum += D;
 	queue.push_back(ip);
@@ -180,8 +179,8 @@ double BorderMatting:: Dfunc(int index, point p, double uf, double ub, double cf
 			inf_point newip = strip[newx*COE+newy];
 			if (newip.area != index)
 				continue;
-			double alpha = Gaussian(newip.dis,delta,sigma);
-			double D = Gaussian(gray.at<uchar>(newx,newy),ufunc(alpha,uf,ub),cfunc(alpha,cf,cb));
+			double alpha = Gaussian(newip.dis / 6.0,delta,sigma);
+			double D = Gaussian(gray.at<float>(newx,newy),ufunc(alpha,uf,ub),cfunc(alpha,cf,cb));
 			D = - log(D) / log(2.0);
 			sum += D;
 			queue.push_back(newip);
@@ -195,7 +194,7 @@ double BorderMatting:: Dfunc(int index, point p, double uf, double ub, double cf
 void calculate(point p,const Mat& gray, const Mat& mask,double& uf,double& ub, double& cf, double& cb)
 {
 	const int len = 20;
-	int sumf=0, sumb=0;
+	double sumf=0, sumb=0;
 	int cntf = 0, cntb = 0;
 	int rows = gray.rows;
 	int cols = gray.cols;
@@ -203,7 +202,7 @@ void calculate(point p,const Mat& gray, const Mat& mask,double& uf,double& ub, d
 		for (int y = p.y - len; y <= p.y + len; y++)
 			if  (!(outrange(x, 0, rows - 1) || outrange(y, 0, cols - 1)))
 				{
-					int g = gray.at<uchar>(x, y);
+					int g = gray.at<float>(x, y);
 					if ((mask.at<uchar>(x, y) & 1) == 0)
 					{
 						sumb += g;
@@ -223,7 +222,7 @@ void calculate(point p,const Mat& gray, const Mat& mask,double& uf,double& ub, d
 		for (int y = p.y - len; y <= p.y + len; y++)
 			if (!(outrange(x, 0, rows - 1) || outrange(y, 0, cols - 1)))
 			{
-				int g = gray.at<uchar>(x, y);
+				int g = gray.at<float>(x, y);
 				if ((mask.at<uchar>(x, y) & 1) == 0)
 				{
 					cb += pow(g - ub, 2.0);
@@ -241,6 +240,7 @@ void BorderMatting::EnergyMinimization(const Mat& oriImg, const Mat& mask, Conto
 {
 	Mat gray;
 	cvtColor(oriImg, gray, COLOR_BGR2GRAY);
+	gray.convertTo(gray,CV_32FC1,1.0/255.0);
 	int index;
 	for (int i = 0; i < contour.size(); i++)
 	{
@@ -258,6 +258,16 @@ void BorderMatting::EnergyMinimization(const Mat& oriImg, const Mat& mask, Conto
 				if (index == 0)
 				{
 					ef[index][d0][s0] = D;
+					continue;
+				}
+				if (index % 6 == 0)
+				{
+					double rs = ef[index - 1][d0][s0] +  D;
+					ef[index][d0][s0] = rs;
+					dands ds;
+					ds.delta = d0;
+					ds.sigma = s0;
+					rec[index][d0][s0] = ds;
 					continue;
 				}
 				for (int d1 = 0; d1 < deltaLevels; d1++)
@@ -312,7 +322,7 @@ void BorderMatting::CalculateMask(Mat& bordermask, const Mat& mask)
 		dands ds = vecds[index];
 		double dt = (ds.delta + 1)*delta;
 		double sg = (ds.sigma + 1)*sigma;
-		double alpha = Gaussian(ip.dis, 0.5, 1);;
+		double alpha = Gaussian(ip.dis / 6.0, 0.5, 1);;
 		bordermask.at<float>(ip.p.x, ip.p.y) = alpha;
 	}
 }
@@ -337,20 +347,19 @@ void BorderMatting::borderMatting(const Mat& oriImg, const Mat& mask, Mat& borde
 	//	for (int j = 0; j < cols; j++)
 	//		if (borderMask.at<float>(i, j) != 0)
 	//			cout << borderMask.at<float>(i, j) << endl;
-
+	GaussianBlur(borderMask, borderMask, Size(7, 7), 5.0);
 	vector<Mat> ch_img(3);
 	vector<Mat> ch_bg(3);
 	Mat img;
 	oriImg.convertTo(img,CV_32FC3,1.0/255.0);
 	cv::split(img, ch_img);
-	Mat bg = Mat(img.size(), CV_32FC3);
+	Mat bg = Mat(img.size(), CV_32FC3 ,Scalar(1.0,1.0,1.0));
 	cv::split(bg, ch_bg);
 	ch_img[0] = ch_img[0].mul(borderMask) + ch_bg[0].mul(1.0 - borderMask);
 	ch_img[1] = ch_img[1].mul(borderMask) + ch_bg[1].mul(1.0 - borderMask);
 	ch_img[2] = ch_img[2].mul(borderMask) + ch_bg[2].mul(1.0 - borderMask);
 	Mat res;
 	cv::merge(ch_img, res);
-	imshow("borderMask",borderMask);
 	imshow("result", res);
 	//imshow("result", res);
 }
