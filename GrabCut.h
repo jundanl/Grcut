@@ -1,9 +1,7 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 #include <iostream>
-
-#include "GMM.h"
-
+#include "BorderMatting.h"
 using namespace std;
 using namespace cv;
 

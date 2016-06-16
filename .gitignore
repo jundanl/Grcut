@@ -7,4 +7,14 @@
 !main.cpp
 !GMM.h
 !GMM.cpp
+<<<<<<< HEAD
 !Kmeans.h
+=======
+!Bgraph.h
+!Bgraph.cpp
+!graph.h
+!graph.cpp
+!instances.inc
+!maxflow.cpp
+!block.h
+>>>>>>> 9731e864cfd4328748e0b6eea594887e5da1be5b

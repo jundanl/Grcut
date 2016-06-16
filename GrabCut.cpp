@@ -1,5 +1,7 @@
 #include "GrabCut.h"
 
+
+
 GrabCut2D::~GrabCut2D(void)
 {
 }
@@ -16,6 +18,18 @@ void setRectInMask(const Mat& img,Mat& mask, Rect& rect)
 	(mask(rect)).setTo(Scalar(GC_PR_FGD));    //GC_PR_FGD == 3 
 }
 
+void initGMM(const Mat& img, const Mat& mask, vector<Vec3b>& bgdSamples, vector<Vec3b>& fgdSamples )
+{
+	for (int i = 0; i < mask.rows; i++)
+		for (int j = 0; j < mask.cols; j++)
+		{
+			if (mask.at<uchar>(i, j) & 1 == 1)
+				fgdSamples.push_back(img.at<Vec3b>(i, j));
+			else
+				bgdSamples.push_back(img.at<Vec3b>(i, j));
+		}
+}
+
 void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Rect rect, cv::InputOutputArray _bgdModel,cv::InputOutputArray _fgdModel, int iterCount, int mode )
 {
     std::cout<<"Execute GrabCut Function: Please finish the code here!"<<std::endl;
@@ -25,18 +39,17 @@ void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Re
 	Mat& bgdModel = _bgdModel.getMatRef();
 	Mat& fgdModel = _fgdModel.getMatRef();
 
-	GMM bgdGMM(bgdModel);
-	GMM fgdGMM(fgdModel);
-
-	/*-------------设置前后景mask---------------*/
 	if (mode == GC_WITH_RECT)
 	{
 		cout << "GC_WITH_RECT" << endl;
 		setRectInMask(img, mask, rect);
 	}
 
-	/*------------根据框选计算GMM-------------*/
-	GMM::initGMM(img, mask, bgdGMM, fgdGMM, bgdModel, fgdModel);
+	vector<Vec3b> bgdSamples, fgdSamples;
+	//initGMM(img,mask,bgdSamples,fgdSamples);
+
+	iterCount = 3;
+	cv::grabCut(img,mask,rect,bgdModel,fgdModel,iterCount,mode);
 
 	if ((mode != GC_CUT) || (iterCount == 0))
 		return;
