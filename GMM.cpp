@@ -3,10 +3,16 @@
 //默认构造
 GMM::GMM()
 {
+	data = new double[dataCount];
 	//排列顺序： 1个权重，3个均值，9个协方差
-	coefs = data;
-	mean = data + componentsCount;
+	coefs = this->data;
+	mean = coefs + componentsCount;
 	cov = mean + channelsCount * componentsCount;
+}
+
+GMM::~GMM()
+{
+	delete[] data;
 }
 
 //使用外部数据构造
@@ -14,13 +20,14 @@ GMM::GMM(Mat& _model)
 {
 	checkModel(_model);
 
+	data = new double[dataCount];
 	//利用_model数据初始化
 	double *base = _model.ptr<double>(0);
 	memcpy(data, base, sizeof(double) * dataCount);
 
 	//排列顺序： 1个权重，3个均值，9个协方差
-	coefs = data;
-	mean = data + componentsCount;
+	coefs = this->data;
+	mean = coefs + componentsCount;
 	cov = mean + channelsCount * componentsCount;
 }
 
@@ -145,6 +152,8 @@ void GMM::initGMM(const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM, Mat
 	const int kmeansItCount = 10; //kmeans最大迭代次数
 	const int kmeasType = KMEANS_PP_CENTERS; //kmeans初始中心选取方法
 	const float kmeansEpsilon = 0.0; //kmeans终止迭代的误差
+
+	printf("%x %x", bgdGMM.data, bgdGMM.coefs);
 
 	vector<Vec3f> bgdSamples, fgdSamples;
 	Mat bgdLabels, fgdLabels;

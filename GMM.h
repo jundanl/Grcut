@@ -10,6 +10,7 @@ public:
 
 	GMM(Mat& _model); //使用外部数据构造
 	GMM();//默认构造，数据全置零
+	~GMM();
 
 	void copyFrom(Mat& _model); //从外部model拷贝数据
 	void copyTo(Mat& _model); //拷贝数据到外部model
@@ -25,9 +26,9 @@ public:
 	//根据img和mask生成GMM，并拷贝一份数据到model
 	static void initGMM(const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM, Mat& bgdModel, Mat& fgdModel);
 
-private:
+//private:
 	int samplesCount;//总像素点数
-	double data[dataCount];//储存所有数据
+	double *data;//储存所有数据
 	//指针指向位置
 	double *coefs;//每个高斯模型的贡献
 	double *mean;//每个高斯模型的期望
