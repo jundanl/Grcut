@@ -18,17 +18,17 @@ void setRectInMask(const Mat& img,Mat& mask, Rect& rect)
 	(mask(rect)).setTo(Scalar(GC_PR_FGD));    //GC_PR_FGD == 3 
 }
 
-void initGMM(const Mat& img, const Mat& mask, vector<Vec3b>& bgdSamples, vector<Vec3b>& fgdSamples )
-{
-	for (int i = 0; i < mask.rows; i++)
-		for (int j = 0; j < mask.cols; j++)
-		{
-			if (mask.at<uchar>(i, j) & 1 == 1)
-				fgdSamples.push_back(img.at<Vec3b>(i, j));
-			else
-				bgdSamples.push_back(img.at<Vec3b>(i, j));
-		}
-}
+//void initGMM(const Mat& img, const Mat& mask, vector<Vec3b>& bgdSamples, vector<Vec3b>& fgdSamples )
+//{
+//	for (int i = 0; i < mask.rows; i++)
+//		for (int j = 0; j < mask.cols; j++)
+//		{
+//			if (mask.at<uchar>(i, j) & 1 == 1)
+//				fgdSamples.push_back(img.at<Vec3b>(i, j));
+//			else
+//				bgdSamples.push_back(img.at<Vec3b>(i, j));
+//		}
+//}
 
 void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Rect rect, cv::InputOutputArray _bgdModel,cv::InputOutputArray _fgdModel, int iterCount, int mode )
 {
@@ -38,21 +38,38 @@ void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Re
 	Mat& mask = _mask.getMatRef();
 	Mat& bgdModel = _bgdModel.getMatRef();
 	Mat& fgdModel = _fgdModel.getMatRef();
-
-	if (mode == GC_WITH_RECT)
+	
+	if (mode != GC_CUT)
 	{
-		cout << "GC_WITH_RECT" << endl;
-		setRectInMask(img, mask, rect);
+		if (mode == GC_WITH_RECT)
+		{
+			cout << "GC_WITH_RECT" << endl;
+			setRectInMask(img, mask, rect);
+		}
+		bgdGMM = GMM(bgdModel);
+		fgdGMM = GMM(fgdModel);
+		GMM::initGMM(img, mask, bgdGMM, fgdGMM, bgdModel, fgdModel);
 	}
-
-	vector<Vec3b> bgdSamples, fgdSamples;
-	//initGMM(img,mask,bgdSamples,fgdSamples);
-
-	iterCount = 3;
-	cv::grabCut(img,mask,rect,bgdModel,fgdModel,iterCount,mode);
-
 	if ((mode != GC_CUT) || (iterCount == 0))
 		return;
+	Mat test;
+	test = mask & 1;
+	test.convertTo(test, CV_32FC1);
+	imshow("mask1",test);
+	//GMM().initGMM(img,mask,bgdGMM,fgdGMM,bgdModel,fgdModel);
+	cout << "bgdMODEl" << endl;
+	for (int i = 0; i < bgdModel.cols; i++)
+		cout <<"I:"<<i<<" "<< bgdModel.at<double>(0, i) << endl;
+
+
+	test = mask & 1;
+	test.convertTo(test, CV_32FC1);
+	imshow("mask2", test);
+	buildgraph bg;
+	bg.mincut(mask,img,bgdModel,fgdModel);
+	test = mask & 1;
+	test.convertTo(test, CV_32FC1);
+	imshow("mask3", test);
 
 
 //一.参数解释：

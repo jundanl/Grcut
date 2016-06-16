@@ -2,6 +2,8 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include "BorderMatting.h"
+#include "GMM.h"
+#include "Bgraph.h"
 using namespace std;
 using namespace cv;
 
@@ -19,5 +21,7 @@ public:
 		int iterCount, int mode );  
 
 	~GrabCut2D(void);
+private:
+	GMM bgdGMM,fgdGMM;
 };
 
