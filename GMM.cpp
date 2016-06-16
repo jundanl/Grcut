@@ -1,4 +1,5 @@
 #include "GMM.h"
+#include "Kmeans.h"
 //默认构造
 GMM::GMM()
 {
@@ -145,8 +146,8 @@ void GMM::initGMM(const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM, Mat
 	const int kmeasType = KMEANS_PP_CENTERS; //kmeans初始中心选取方法
 	const float kmeansEpsilon = 0.0; //kmeans终止迭代的误差
 
-	Mat bgdLabels, fgdLabels;
 	vector<Vec3f> bgdSamples, fgdSamples;
+	Mat bgdLabels, fgdLabels;
 
 	//根据框选分配到两个GMM
 	for (int i = 0; i < img.rows; i++)
@@ -164,6 +165,10 @@ void GMM::initGMM(const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM, Mat
 	Mat _fgdSamples(fgdSamples.size(), GMM::channelsCount, CV_32FC1, &fgdSamples[0][0]);
 	kmeans(_bgdSamples, GMM::componentsCount, bgdLabels, TermCriteria(CV_TERMCRIT_ITER, kmeansItCount, kmeansEpsilon), 0, kmeasType);
 	kmeans(_fgdSamples, GMM::componentsCount, fgdLabels, TermCriteria(CV_TERMCRIT_ITER, kmeansItCount, kmeansEpsilon), 0, kmeasType);
+	
+	//使用自建kmeans进行聚类分析
+	//k_means(bgdSamples, bgdLabels, 10, 5, 3);
+	//k_means(fgdSamples, fgdLabels, 10, 5, 3);
 
 	/*-------------利用聚类结果更新GMM参数-------------*/
 	//初始化
