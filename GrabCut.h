@@ -22,6 +22,6 @@ public:
 
 	~GrabCut2D(void);
 private:
-	GMM bgdGMM,fgdGMM;
+	GMM bgdGMM, fgdGMM;
 };
 

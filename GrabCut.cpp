@@ -39,6 +39,10 @@ void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Re
 	Mat& bgdModel = _bgdModel.getMatRef();
 	Mat& fgdModel = _fgdModel.getMatRef();
 	
+	/*iterCount = 2;
+	grabCut(img,mask,rect,bgdModel,fgdModel,iterCount,mode);
+	return;
+*/
 	if (mode != GC_CUT)
 	{
 		if (mode == GC_WITH_RECT)
@@ -52,26 +56,10 @@ void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Re
 	}
 	if ((mode != GC_CUT) || (iterCount == 0))
 		return;
-	Mat test;
-	test = mask & 1;
-	test.convertTo(test, CV_32FC1);
-	imshow("mask1",test);
+	GMM::initGMM(img, mask, bgdGMM, fgdGMM, bgdModel, fgdModel);
 	//GMM().initGMM(img,mask,bgdGMM,fgdGMM,bgdModel,fgdModel);
-	cout << "bgdMODEl" << endl;
-	for (int i = 0; i < bgdModel.cols; i++)
-		cout <<"I:"<<i<<" "<< bgdModel.at<double>(0, i) << endl;
-
-
-	test = mask & 1;
-	test.convertTo(test, CV_32FC1);
-	imshow("mask2", test);
 	buildgraph bg;
 	bg.mincut(mask,img,bgdModel,fgdModel);
-	test = mask & 1;
-	test.convertTo(test, CV_32FC1);
-	imshow("mask3", test);
-
-
 //一.参数解释：
 	//输入：
 	 //cv::InputArray _img,     :输入的color图像(类型-cv:Mat)

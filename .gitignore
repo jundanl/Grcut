@@ -19,4 +19,5 @@
 !block.h
 !*.h
 !*.cpp
+!*.jpg
 >>>>>>> 9731e864cfd4328748e0b6eea594887e5da1be5b

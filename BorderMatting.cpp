@@ -74,21 +74,22 @@ void BorderMatting::ParameterizationContour(const Mat& edge,Contour& contour)
 void BorderMatting::StripInit(const Mat& mask, Contour& contour, Strip& strip)
 {
 	Mat color(mask.size(), CV_32SC1, Scalar(0));
-	vector<inf_point> queue;
+	vector<point> queue;
 	for (int i = 0; i < contour.size(); i++)
 	{
 		inf_point ip;
 		ip.p = contour[i].p;
 		ip.dis = 0;
 		ip.area = contour[i].index;
-		queue.push_back(ip);
+		queue.push_back(ip.p);
 		strip[ip.p.x*COE + ip.p.y] = ip;
-		color.at<uchar>(ip.p.x, ip.p.y) = ip.area+1;
+		color.at<int>(ip.p.x, ip.p.y) = ip.area+1;
 	}
 	int l = 0;
 	while (l < queue.size())
 	{
-		inf_point ip = queue[l++];
+		point p = queue[l++];
+		inf_point ip = strip[p.x*COE+p.y];
 		if (abs(ip.dis) >= 6)
 			break;
 		int x = ip.p.x;
@@ -100,18 +101,26 @@ void BorderMatting::StripInit(const Mat& mask, Contour& contour, Strip& strip)
 			if (outrange(newx, 0, rows - 1) || outrange(newy, 0, cols - 1))
 				continue;
 			inf_point nip;
-			if ((color.at<uchar>(newx, newy) != 0) && (color.at<uchar>(newx, newy) % 6 == 0))
-				continue;
-			nip.p.x = newx; nip.p.y = newy;
+			if (color.at<int>(newx, newy) != 0){
+				if (ip.area % 6 != 0)
+					continue;
+				if ((color.at<int>(newx, newy) - 1) % 6 == 0)
+					continue;
+				nip = strip[newx*COE+newy];
+			}
+			else
+			{
+				nip.p.x = newx; nip.p.y = newy;
+			}
 			nip.dis = abs(ip.dis) + 1;
 			if ((mask.at<uchar>(newx, newy) & 1) != 1 )
 			{
 				nip.dis = -nip.dis;
 			}
 			nip.area = ip.area;
-			queue.push_back(nip);
-			strip[nip.p.x*COE+nip.p.y] = nip;
-			color.at<uchar>(newx, newy) = 255;
+			strip[nip.p.x*COE + nip.p.y] = nip;
+			queue.push_back(nip.p);
+			color.at<int>(newx, newy) = nip.area+1;
 		}
 	}
 	imshow("strip",color);
