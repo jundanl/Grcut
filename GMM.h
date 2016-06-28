@@ -34,9 +34,6 @@ public:
 	double *mean;//每个高斯模型的期望
 	double *cov;//每个高斯模型的方差
 
-	double inv[componentsCount][channelsCount][channelsCount];//协方差矩阵的逆
-	double det[componentsCount];//协方差行列式
-
 	double sum[componentsCount][channelsCount];//每个集合的采样点数据和
 	double product[componentsCount][channelsCount][channelsCount];//每个集合的采样点数据之间的积，用来计算协方差
 	double counts[componentsCount];//每个集合的采样点数量

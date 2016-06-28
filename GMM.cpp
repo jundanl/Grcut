@@ -91,34 +91,6 @@ void GMM::update()
 					product[c][i][j] / counts[c] - mean[meanBase + i] * mean[meanBase + j];
 
 			}
-		
-		//计算第c个高斯模型的协方差逆矩阵和行列式
-		det[c] = co[0] * (co[4] * co[8] - co[5] * co[7])
-			- co[1] * (co[3] * co[8] - co[5] * co[6])
-			+ co[2] * (co[3] * co[7] - co[4] * co[6]);
-		//为了计算逆矩阵，为行列式小于等于0的矩阵对角线增加噪声
-		if (det[c] <= std::numeric_limits<double>::epsilon())
-		{
-			co[0] += 0.001;
-			co[4] += 0.001;
-			co[8] += 0.001;
-
-			det[c] = co[0] * (co[4] * co[8] - co[5] * co[7])
-				- co[1] * (co[3] * co[8] - co[5] * co[6])
-				+ co[2] * (co[3] * co[7] - co[4] * co[6]);
-		}
-		CV_Assert(det[c] > std::numeric_limits<double>::epsilon());
-		
-		//计算逆
-		inv[c][0][0] =  (co[4]*co[8] - co[5]*co[7]) / det[c];  
-        inv[c][1][0] = -(co[3]*co[8] - co[5]*co[6]) / det[c];  
-        inv[c][2][0] =  (co[3]*co[7] - co[4]*co[6]) / det[c];  
-        inv[c][0][1] = -(co[1]*co[8] - co[2]*co[7]) / det[c];  
-        inv[c][1][1] =  (co[0]*co[8] - co[2]*co[6]) / det[c];  
-        inv[c][2][1] = -(co[0]*co[7] - co[1]*co[6]) / det[c];  
-        inv[c][0][2] =  (co[1]*co[5] - co[2]*co[4]) / det[c];  
-        inv[c][1][2] = -(co[0]*co[5] - co[2]*co[3]) / det[c];  
-        inv[c][2][2] =  (co[0]*co[4] - co[1]*co[3]) / det[c];  
 	}
 
 }
@@ -153,7 +125,7 @@ void GMM::initGMM(const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM, Mat
 	const int kmeasType = KMEANS_PP_CENTERS; //kmeans初始中心选取方法
 	const float kmeansEpsilon = 0.0; //kmeans终止迭代的误差
 
-	printf("%x %x", bgdGMM.data, bgdGMM.coefs);
+	printf("%x %x\n", bgdGMM.data, bgdGMM.coefs);
 
 	vector<Vec3f> bgdSamples, fgdSamples;
 	Mat bgdLabels, fgdLabels;
@@ -172,12 +144,12 @@ void GMM::initGMM(const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM, Mat
 	CV_Assert(!bgdSamples.empty() && !fgdSamples.empty());
 	Mat _bgdSamples(bgdSamples.size(), GMM::channelsCount, CV_32FC1, &bgdSamples[0][0]);
 	Mat _fgdSamples(fgdSamples.size(), GMM::channelsCount, CV_32FC1, &fgdSamples[0][0]);
-	kmeans(_bgdSamples, GMM::componentsCount, bgdLabels, TermCriteria(CV_TERMCRIT_ITER, kmeansItCount, kmeansEpsilon), 0, kmeasType);
-	kmeans(_fgdSamples, GMM::componentsCount, fgdLabels, TermCriteria(CV_TERMCRIT_ITER, kmeansItCount, kmeansEpsilon), 0, kmeasType);
+	//kmeans(_bgdSamples, GMM::componentsCount, bgdLabels, TermCriteria(CV_TERMCRIT_ITER, kmeansItCount, kmeansEpsilon), 0, kmeasType);
+	//kmeans(_fgdSamples, GMM::componentsCount, fgdLabels, TermCriteria(CV_TERMCRIT_ITER, kmeansItCount, kmeansEpsilon), 0, kmeasType);
 	
 	//使用自建kmeans进行聚类分析
-	//k_means(bgdSamples, bgdLabels, 10, 5, 3);
-	//k_means(fgdSamples, fgdLabels, 10, 5, 3);
+	k_means(bgdSamples, bgdLabels, 10, 5, 3);
+	k_means(fgdSamples, fgdLabels, 10, 5, 3);
 
 	/*-------------利用聚类结果更新GMM参数-------------*/
 	//初始化
