@@ -32,8 +32,9 @@ static void on_mouse( int event, int x, int y, int flags, void* param )
 
 int main()
 {
-
-	string filename = "oldman.jpg";
+	cout << "Input image path please:" << endl;
+	string filename;
+	cin >> filename;
 	Mat image = imread( filename, 1 );
 	if( image.empty() )
 	{

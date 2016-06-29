@@ -18,18 +18,6 @@ void setRectInMask(const Mat& img,Mat& mask, Rect& rect)
 	(mask(rect)).setTo(Scalar(GC_PR_FGD));    //GC_PR_FGD == 3 
 }
 
-//void initGMM(const Mat& img, const Mat& mask, vector<Vec3b>& bgdSamples, vector<Vec3b>& fgdSamples )
-//{
-//	for (int i = 0; i < mask.rows; i++)
-//		for (int j = 0; j < mask.cols; j++)
-//		{
-//			if (mask.at<uchar>(i, j) & 1 == 1)
-//				fgdSamples.push_back(img.at<Vec3b>(i, j));
-//			else
-//				bgdSamples.push_back(img.at<Vec3b>(i, j));
-//		}
-//}
-
 void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Rect rect, cv::InputOutputArray _bgdModel,cv::InputOutputArray _fgdModel, int iterCount, int mode )
 {
     std::cout<<"Execute GrabCut Function: Please finish the code here!"<<std::endl;
@@ -38,10 +26,6 @@ void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Re
 	Mat& mask = _mask.getMatRef();
 	Mat& bgdModel = _bgdModel.getMatRef();
 	Mat& fgdModel = _fgdModel.getMatRef();
-	/*iterCount = 2;
-	grabCut(img,mask,rect,bgdModel,fgdModel,iterCount,mode);
-	return;
-*/
 	static GMM bgdGMM = GMM(bgdModel);
 	static GMM fgdGMM = GMM(fgdModel);
 	if (mode != GC_CUT)
@@ -51,20 +35,15 @@ void GrabCut2D::GrabCut( cv::InputArray _img, cv::InputOutputArray _mask, cv::Re
 			cout << "GC_WITH_RECT" << endl;
 			setRectInMask(img, mask, rect);
 		}
-		//bgdGMM = GMM();
-		//fgdGMM = GMM();
 		GMM::initGMM(img, mask, bgdGMM, fgdGMM, bgdModel, fgdModel);
 	}
 	if ((mode != GC_CUT) || (iterCount == 0))
 		return;
-	cout << "befot initGMM" << endl;
 	GMM::initGMM(img, mask, bgdGMM, fgdGMM, bgdModel, fgdModel);
-	//GMM().initGMM(img,mask,bgdGMM,fgdGMM,bgdModel,fgdModel);
-	cout << "after initGMM" << endl;
-	//return;
+	cout << "initGMM completes." << endl;
 	buildgraph bg;
 	bg.mincut(mask,img,bgdModel,fgdModel);
-	cout << "after mincut" << endl;
+	cout << "mincut completes" << endl;
 //一.参数解释：
 	//输入：
 	 //cv::InputArray _img,     :输入的color图像(类型-cv:Mat)

@@ -36,16 +36,27 @@ typedef vector<double[30][10]> Energyfunction;
 typedef vector<dands[30][10]> Record;
 typedef vector<para_point> Contour;
 typedef unordered_map<int, inf_point> Strip;
-const int nstep = 8;
-const int nx[8] = { 0, 1, 0, -1, -1, -1, 1, 1 };
-const int ny[8] = { 1, 0, -1, 0, -1, 1, -1, 1 };
 
-const int rstep = 4;
-const int rx[4] = {0,1,0,-1};
-const int ry[4] = {1,0,-1,0};
+/*轮廓上视为相邻的8个点*/
+#define nstep 8
+const int nx[nstep] = { 0, 1, 0, -1, -1, -1, 1, 1 };
+const int ny[nstep] = { 1, 0, -1, 0, -1, 1, -1, 1 };
 
-const double MAXNUM = 9999999;
-const int COE = 10000;
+#define COE 10000
+
+#define stripwidth 6
+
+#define L 20
+
+/*欧式距离为1的相邻点*/
+#define rstep 4
+const int rx[rstep] = {0,1,0,-1};
+const int ry[rstep] = {1,0,-1,0};
+
+#define MAXNUM 9999999;
+
+#define sigmaLevels  15
+#define deltaLevels  11
 
 class BorderMatting
 {
@@ -54,31 +65,29 @@ public:
 	~BorderMatting();
 	void borderMatting(const Mat& oriImg, const Mat& mask, Mat& borderMask);
 private:
-	void ParameterizationContour(const Mat& edge, Contour& contour);
-	void dfs(int x, int y, const Mat& mask, Mat& amask, Contour& contour);
-	void StripInit(const Mat& mask, Contour& contour, Strip& strip);
-	void EnergyMinimization(const Mat& oriImg, const Mat& mask, Contour& contour, Strip& strip);
+	void ParameterizationContour(const Mat& edge);
+	void dfs(int x, int y, const Mat& mask, Mat& amask);
+	void StripInit(const Mat& mask);
+	void EnergyMinimization(const Mat& oriImg, const Mat& mask);
 	inline double Vfunc(double ddelta, double dsigma)
 	{
-		return lamda1*pow(ddelta, 2.0) + lamda2*pow(dsigma, 2.0);
+		return (lamda1*pow(ddelta, 2.0) + lamda2*pow(dsigma, 2.0))/200;
 	}
 	void init(const Mat& img);
-	double Dfunc(int index, point p, double uf, double ub, double cf, double cb, double delta, double sigma, Strip& strip, const Mat& gray);
+	double Dfunc(int index, point p, double uf, double ub, double cf, double cb, double delta, double sigma, const Mat& gray);
 	void CalculateMask(Mat& bordermask, const Mat& mask);
-	const int sigmaLevels = 10;
-	const int deltaLevels = 10;
-	const double sigma = 0.5;
-	const double delta = 0.3;
+	void display(const Mat& oriImg,const Mat& mask);
+
 	const int lamda1 = 50;
 	const int lamda2 = 1000;
-	int sections = 0;
-	int rows, cols;
-	int areacnt;
+	int sections; //独立轮廓个数
+	int rows, cols; 
+	int areacnt; //区域个数（即轮廓上点的个数）
 	int tot;
-	Contour contour;
-	Strip strip;
-	double ef[5000][30][10];
-	dands rec[5000][30][10];
+	Contour contour; //轮廓
+	Strip strip; //条带
+	double ef[5000][deltaLevels][sigmaLevels];
+	dands rec[5000][deltaLevels][sigmaLevels];
 	vector<dands> vecds;
 };
 
